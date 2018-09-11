@@ -12,6 +12,7 @@ database=config.DATABASE_CONFIG['database']
 username=config.DATABASE_CONFIG['username']
 password=config.DATABASE_CONFIG['password']
 nametag=config.UI_CONFIG['nametag']
+relay=config.UI_CONFIG['relay']
 
 class bcolors:
     HEADER = '\033[95m'
@@ -100,11 +101,11 @@ while True:
             print u'{0: ^24}'.format(name).encode('utf-8')
             print ''
             print bcolors.ENDC
-            GPIO.setup(31, GPIO.OUT)
+            GPIO.setup(relay, GPIO.OUT)
             cur = db.cursor()
             sql = "INSERT INTO poller (poller.uid,poller.owner) VALUES (%s,%s)"
             cur.execute(sql,(uid,name))
             db.commit()
             time.sleep(5)
-            GPIO.setup(31, GPIO.IN)
+            GPIO.setup(relay, GPIO.IN)
         db.close()
