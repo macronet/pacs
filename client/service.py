@@ -4,6 +4,13 @@
 import time
 import os
 import datetime
+import config
+import MySQLdb
+
+hostname=config.DATABASE_CONFIG['hostname']
+database=config.DATABASE_CONFIG['database']
+username=config.DATABASE_CONFIG['username']
+password=config.DATABASE_CONFIG['password']
 
 class bcolors:
     HEADER = '\033[95m'
@@ -46,29 +53,44 @@ while True:
 #    timestampSQL = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     print '                        '
     print(' Puolametsä Lämpöyhtiö' + '     ' + timestamp + '     ')
+    print '                        '
+    print hostname
+    print database
+    print username
+    print password
     clf = nfc.ContactlessFrontend('tty:S0:pn532')
     after1s = lambda: time.time() - started > 0.5
     started = time.time()
     tag = clf.connect(rdwr=rdwr_options, llcp={}, terminate=after1s)
     if tag:
         uid = str(tag.identifier).encode('hex')
-# OK
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print bcolors.OKGREENBG
-        print(' Puolametsä Lämpöyhtiö' + '     ' + timestamp + '     ')
-        print '                        '
-        print '     Known tag, OK!     '
-        print '     ' + uid + '     '
-        print '                        '
-        print bcolors.ENDC
-        time.sleep(5)
-# Fail
-        os.system('cls' if os.name == 'nt' else 'clear')
-        print bcolors.FAILREDBG
-        print(' Puolametsä Lämpöyhtiö' + '     ' + timestamp + '     ')
-        print '                        '
-        print '      Unknown tag!      '
-        print '     ' + uid + '     '
-        print '                        '
-        print bcolors.ENDC
-        time.sleep(5)
+# Verify
+        db = MySQLdb.connect(read_default_file="./config.ini",db=database)
+        cur = db.cursor()
+        sql = "SELECT cards.uid,cards.owner,owner.house,owner.apartment,owner.name FROM cards RIGHT JOIN owner ON cards.owner = owner.id WHERE cards.uid = %s AND cards.active = 1 LIMIT 1"
+        cur.execute(sql, [uid])
+        if not cur.rowcount:
+            # Fail
+            #sql = "INSERT INTO poller (poller.uid) VALUES (%s)"
+            #cur.execute(sql, [uid])
+            #db.commit()
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print bcolors.FAILREDBG
+            print(' Puolametsä Lämpöyhtiö' + '     ' + timestamp + '     ')
+            print '                        '
+            print '      Unknown tag!      '
+            print '     ' + uid + '     '
+            print '                        '
+            print bcolors.ENDC
+            time.sleep(5)
+        else:
+            # OK
+            os.system('cls' if os.name == 'nt' else 'clear')
+            print bcolors.OKGREENBG
+            print(' Puolametsä Lämpöyhtiö' + '     ' + timestamp + '     ')
+            print '                        '
+            print '     Known tag, OK!     '
+            print '     ' + uid + '     '
+            print '                        '
+            print bcolors.ENDC
+            time.sleep(5)
