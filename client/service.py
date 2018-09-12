@@ -21,6 +21,7 @@ relay=config.PROG_CONFIG['relay']
 class bcolors:
     OKGREENBG = '\033[42m'
     FAILREDBG = '\033[41m'
+    ENDC = '\033[0m'
 
 import RPi.GPIO as GPIO
 GPIO.setmode(GPIO.BOARD)
