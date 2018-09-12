@@ -1,6 +1,10 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-# service-libnfc.py v2018091101
+##
+# Some package requirements (RPi/stretch)
+# - libnfc5, python-rpi.gpio, python-mysqldb
+##
+
 import time
 import os
 import datetime
@@ -11,18 +15,10 @@ hostname=config.DATABASE_CONFIG['hostname']
 database=config.DATABASE_CONFIG['database']
 username=config.DATABASE_CONFIG['username']
 password=config.DATABASE_CONFIG['password']
-nametag=config.UI_CONFIG['nametag']
-relay=config.UI_CONFIG['relay']
+nametag=config.PROG_CONFIG['nametag']
+relay=config.PROG_CONFIG['relay']
 
 class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
     OKGREENBG = '\033[42m'
     FAILREDBG = '\033[41m'
 
