@@ -30,11 +30,13 @@ GPIO.setwarnings(False)
 
 import nfc
 from nfc.clf import RemoteTarget
-clf = nfc.ContactlessFrontend('tty:AMA0:pn532')
+clf = nfc.ContactlessFrontend()
 
 while True:
+    clf.open('tty:AMA0:pn532')
     print bcolors.ENDC
     os.system('cls' if os.name == 'nt' else 'clear')
+    os.system('setterm -cursor off')
     timestamp = datetime.datetime.now().strftime('%d-%m-%Y %H:%M')
     print ''
     print u'{0: ^24}'.format(nametag).encode('utf-8')
@@ -44,6 +46,7 @@ while True:
     if target:
         tag = nfc.tag.activate(clf, target)
         uid = str(tag.identifier).encode('hex').upper()
+        clf.close()
         # Verify
         db = MySQLdb.connect(read_default_file="./config.ini",db=database)
         cur = db.cursor()
@@ -90,4 +93,5 @@ while True:
             time.sleep(5)
             GPIO.setup(relay, GPIO.IN)
         db.close()
+    clf.close()
     time.sleep(1)
