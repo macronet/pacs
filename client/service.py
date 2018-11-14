@@ -2,7 +2,8 @@
 # -*- coding: UTF-8 -*-
 ##
 # Some package requirements (RPi/stretch)
-# - libnfc5, python-rpi.gpio, python-mysqldb
+# deb: libnfc5 python-rpi.gpio python-mysqldb
+# pip: nfcpy (>=0.13.2)
 ##
 
 import time
@@ -28,23 +29,8 @@ GPIO.setmode(GPIO.BOARD)
 GPIO.setwarnings(False)
 
 import nfc
-rdwr_options = {
-    'targets': ['106A', '106B', '212F', '424F'],
-    'on-connect': lambda tag: False,
-    'iterations': 1,
-    'interval': 0
-}
-import ndef
-from nfc.tag import tt1
-from nfc.tag import tt2
-from nfc.tag import tt3
-from nfc.tag import tt4
-tagtypes = (
-    ('uid', nfc.tag.tt1.Type1Tag),
-    ('uid', nfc.tag.tt2.Type2Tag),
-    ('idm', nfc.tag.tt3.Type3Tag),
-    ('uid', nfc.tag.tt4.Type4Tag)
-)
+from nfc.clf import RemoteTarget
+clf = nfc.ContactlessFrontend('tty:AMA0:pn532')
 
 while True:
     print bcolors.ENDC
@@ -54,11 +40,9 @@ while True:
     print u'{0: ^24}'.format(nametag).encode('utf-8')
     print u'{0: ^24}'.format(timestamp).encode('utf-8')
     print ''
-    clf = nfc.ContactlessFrontend('tty:S0:pn532')
-    after1s = lambda: time.time() - started > 0.5
-    started = time.time()
-    tag = clf.connect(rdwr=rdwr_options, llcp={}, terminate=after1s)
-    if tag:
+    target = clf.sense(RemoteTarget('106A'), RemoteTarget('106B'), RemoteTarget('212F'), RemoteTarget('424F'))
+    if target:
+        tag = nfc.tag.activate(clf, target)
         uid = str(tag.identifier).encode('hex').upper()
         # Verify
         db = MySQLdb.connect(read_default_file="./config.ini",db=database)
@@ -106,3 +90,4 @@ while True:
             time.sleep(5)
             GPIO.setup(relay, GPIO.IN)
         db.close()
+    time.sleep(1)
